@@ -1,0 +1,104 @@
+id: custom_migration
+label: 'Custom migration'
+description: 'Custom migration from Json to Drupal'
+# id your group.
+migration_group: json_group
+migration_tags: null
+source:
+  # Migrate plus plugin.
+  plugin: url
+  data_fetcher_plugin: http
+  data_parser_plugin: json
+  urls:
+    - 'http://some.url'
+  # if it need authentication.
+  authentication:
+    plugin: basic
+    username: 'name'
+    password: 'password'
+  # Data selector for current Json.
+  item_selector: 'hits/hits'
+  # list all fields.
+  fields:
+    # Variable name.
+    - name: title
+      # name for human.
+      label: 'Title'
+      # data slector after hits/hits.
+      selector: '_source/titre'
+    - name: subtitle
+      label: 'Subtitle'
+      selector: '_source/sous_titre'
+    - name: chapo
+      label: 'Chapo'
+      selector: '_source/chapo'
+    - name: content
+      label: 'Content'
+      selector: '_source/texte'
+    - name: date_publication
+      label: 'Publication date'
+      selector: '_source/date_publication'
+    - name: meta_desc
+      label: 'Meta description'
+      selector: '_source/meta_desc'
+    - name: meta_keywords
+      label: 'Meta keywords'
+      selector: '_source/meta_keywords/0'
+    - name: id
+      label: 'Id'
+      selector: _id
+  ids:
+    # name field from source
+    id:
+      type: integer
+  # when you use the same value for all fields, it saves like array.
+  constants:
+    imported: 1
+    content_status: 1
+    body_format: full_html
+process:
+  # name for destination
+  type:
+    # plugin for current.
+    plugin: default_value
+    # value from source(field name)
+    default_value: news
+  title:
+    plugin: skip_on_empty
+    method: row
+    source: title
+    message: 'Field title is missing'
+  status: 'constants/content_status'
+  field_subtitle: subtitle
+  field_chapo:
+    plugin: callback
+    callable: strip_tags
+    source: chapo
+  'field_content/value': content
+  'field_content/format': 'constants/body_format'
+  field_publication_date:
+    plugin: format_date
+    from_format: 'Y-m-d H-m-s'
+    to_format: 'Y-m-d\TH-m-s'
+    from_timezone: Europe/Paris
+    to_timezone: UTC
+    source: date_publication
+  field_meta_description: meta_desc
+  field_meta_keywords: meta_keywords
+  field_old_content_id:
+    plugin: skip_on_empty
+    method: row
+    source: id
+    message: 'Field field_old_content_id is missing'
+  field_imported: 'constants/imported'
+  field_import_date:
+    plugin: current_date
+  sticky:
+    plugin: default_value
+    default_value: 0
+  uid:
+    plugin: default_value
+    default_value: 0
+destination:
+  # entity node news, because type = news.
+  plugin: 'entity:node'

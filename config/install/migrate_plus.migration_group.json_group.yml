@@ -1,0 +1,14 @@
+id: json_group
+# A human-friendly label for the group.
+label: Json Imports
+# More information about the group.
+description: Custom migration from json to CT News.
+# Short description of the type of source, e.g. "Drupal 6" or "WordPress".
+source_type: Json
+# As with the migration configuration (see beer_term), we add an enforced
+# dependency so the migration_group configuration will be removed on module
+# uninstall.
+dependencies:
+  enforced:
+    module:
+      - custom_migration
